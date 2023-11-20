@@ -3,7 +3,16 @@
 Stores and tags files uploaded by users
 
 Features
-- Upload 
+
+- Upload
 - Store
 - Tag
 - Search
+
+Requirements:
+
+- Localstack CLI
+- Golang
+- Gorilla Mux
+- React
+- AWS Go SDK

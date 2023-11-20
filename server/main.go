@@ -9,6 +9,10 @@ import (
 	"github.com/rs/cors"
 )
 
+func init() {
+	handlers.CreateAWSConfig()
+}
+
 func main() {
 	r := mux.NewRouter()
 
@@ -22,7 +26,7 @@ func main() {
 	})
 	handler := c.Handler(r)
 
-	fmt.Println("Starting server at port 8080...")
+	fmt.Println("Starting server at port 8080...\n")
 	http.ListenAndServe(":8080", handler)
 }
 
