@@ -59,7 +59,7 @@ func main() {
 	// }
 
 	// List objects
-	result2, err := s3Client.ListObjects(&s3.ListObjectsInput{Bucket: aws.String(bucketName)})
+	result2, err := s3Client.ListObjectsV2(&s3.ListObjectsV2Input{Bucket: aws.String(bucketName)})
 	if err != nil {
 		log.Fatal(err)
 	} else {

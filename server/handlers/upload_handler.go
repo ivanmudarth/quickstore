@@ -11,6 +11,7 @@ import (
 )
 
 func UploadHandler(w http.ResponseWriter, r *http.Request) {
+	// TODO: add check to ensure only valid file type is received
 	fmt.Println("Uploading a file...")
 
 	file, header, err := r.FormFile("file")
@@ -29,22 +30,22 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Upload file to S3
-	err = UploadToS3(header)
+	err = uploadToS3(header)
 	if err != nil {
 		http.Error(w, "Error uploading to S3", http.StatusBadRequest)
 		return
 	}
 
 	// Upload file's metadata to Postgres
-	err = UploadMetaData()
+	err = uploadMetaData()
 	if err != nil {
 		http.Error(w, "Error uploading file metadata", http.StatusBadRequest)
 	}
 	w.Write([]byte("File uploaded successfully"))
 }
 
-// TODO: name object key better (consider same file name diff contents)
-func UploadToS3(fileHeader *multipart.FileHeader) (err error) {
+// TODO: name object key better (consider same file name diff contents, use UUID)
+func uploadToS3(fileHeader *multipart.FileHeader) (err error) {
 	// Open the file from HTTP request
 	reqFile, err := fileHeader.Open()
 	if err != nil {
@@ -71,8 +72,8 @@ func UploadToS3(fileHeader *multipart.FileHeader) (err error) {
 	return nil
 }
 
-func UploadMetaData() (err error) {
-	// TODO
+func uploadMetaData() (err error) {
+	// TODO:
 
 	return nil
 }

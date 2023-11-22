@@ -16,8 +16,8 @@ func init() {
 func main() {
 	r := mux.NewRouter()
 
-	r.HandleFunc("/upload", handlers.UploadHandler).Methods("POST") // shoudl be POST
-	// r.HandleFunc("/displayAll", handlers.DisplayAllHandler).Methods("GET")
+	r.HandleFunc("/upload", handlers.UploadHandler).Methods("POST")
+	r.HandleFunc("/display", handlers.DisplayHandler).Methods("GET")
 	http.Handle("/", r)
 
 	c := cors.New(cors.Options{

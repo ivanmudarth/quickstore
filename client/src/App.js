@@ -1,5 +1,5 @@
 import "./App.css";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ChakraProvider,
   Box,
@@ -9,11 +9,17 @@ import {
   VStack,
   FormLabel,
   FormControl,
+  Text,
 } from "@chakra-ui/react";
 import axios from "axios";
 
 function App() {
   const [file, setFile] = useState();
+  const [urls, setURLs] = useState([]);
+
+  useEffect(() => {
+    handleDisplay();
+  }, []);
 
   function handleChange(event) {
     setFile(event.target.files[0]);
@@ -43,6 +49,19 @@ function App() {
       });
   }
 
+  function handleDisplay() {
+    const url = "http://localhost:8080/display";
+
+    axios
+      .get(url)
+      .then((response) => {
+        setURLs(response.data);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }
+
   return (
     <ChakraProvider>
       <Center>
@@ -50,13 +69,21 @@ function App() {
           <VStack spacing={4} align="baseline">
             <form onSubmit={handleUpload}>
               <FormControl>
-                <FormLabel>Upload file</FormLabel>
-                <Input type="file" onChange={handleChange} />
-                <Button type="submit" colorScheme="blue" variant="solid">
-                  Upload
-                </Button>
+                <VStack spacing={2} align="baseline">
+                  <FormLabel>Upload a File:</FormLabel>
+                  <Input type="file" onChange={handleChange} />
+                  <Button type="submit" colorScheme="blue" variant="solid">
+                    Upload
+                  </Button>
+                </VStack>
               </FormControl>
             </form>
+            <VStack spacing={4} align="baseline">
+              <Text>Uploaded Files:</Text>
+              {urls.map((url) => (
+                <img key={url} src={url} width={200} />
+              ))}
+            </VStack>
           </VStack>
         </Box>
       </Center>

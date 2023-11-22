@@ -12,7 +12,10 @@ import (
 )
 
 type s3config struct {
+	endpoint   string
+	client     *s3.S3
 	uploader   *s3manager.Uploader
+	downloader *s3manager.Downloader
 	bucketName *string
 }
 
@@ -31,6 +34,7 @@ func CreateAWSConfig() {
 	}
 	sess := session.Must(session.NewSession(config))
 	s3Uploader := s3manager.NewUploader(sess)
+	s3Downloader := s3manager.NewDownloader(sess)
 	s3Client := s3.New(sess)
 
 	// Create new bucket if it doesn't exist
@@ -46,5 +50,5 @@ func CreateAWSConfig() {
 	}
 
 	// Set values for struct representing AWS config
-	AWSConfig = s3config{uploader: s3Uploader, bucketName: aws.String(bucketName)}
+	AWSConfig = s3config{endpoint: localstackEndpoint, client: s3Client, uploader: s3Uploader, downloader: s3Downloader, bucketName: aws.String(bucketName)}
 }
