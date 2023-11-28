@@ -16,3 +16,5 @@ Requirements:
 - Gorilla Mux
 - React
 - AWS Go SDK
+- MySQL (5.6+)
+- MySQL Go Driver

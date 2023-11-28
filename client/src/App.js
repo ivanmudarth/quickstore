@@ -17,6 +17,10 @@ function App() {
   const [file, setFile] = useState();
   const [urls, setURLs] = useState([]);
 
+  // TODO: input requirements
+  // username must be unique (check)
+  // filename, each tag must be less than / equal to 15 chars
+
   useEffect(() => {
     handleDisplay();
   }, []);
@@ -32,6 +36,7 @@ function App() {
     // limit type of file to upload
     // upload progress bar / disable input/submit while uploading
     // display error message if error in upload
+    // user generated tags
     event.preventDefault();
     const url = "http://localhost:8080/upload";
     const formData = new FormData();

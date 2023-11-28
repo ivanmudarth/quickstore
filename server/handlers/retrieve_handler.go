@@ -26,7 +26,8 @@ func DisplayHandler(w http.ResponseWriter, r *http.Request) {
 
 func getAllKeys() []string {
 	// TODO: finish once upload metadata works
-	return []string{"cat.jpeg", "dog.jpeg"}
+	// return []string{"cat.jpeg", "dog.jpeg"}
+	return []string{"cat.jpeg"}
 }
 
 func getURLsFromS3() ([]string, error) {
