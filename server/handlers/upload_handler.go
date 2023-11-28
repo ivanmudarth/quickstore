@@ -85,7 +85,7 @@ func uploadMetaData(fileHeader *multipart.FileHeader, s3Key string) (err error) 
 	fileName := fileHeader.Filename
 	fileSize := float64(fileHeader.Size) / oneMB
 
-	// insert
+	// create new entry in File table
 	_, err = database.DB.Query(`
 		INSERT INTO File (S3Key, Name, Size) 
 		VALUES (?, ?, ?)
@@ -94,7 +94,6 @@ func uploadMetaData(fileHeader *multipart.FileHeader, s3Key string) (err error) 
 		log.Fatal(err)
 		return err
 	}
-	fmt.Println(fileSize)
 
 	fmt.Println("File metadata uploaded successfully\n")
 	return nil

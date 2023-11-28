@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 
+	"../database"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 )
@@ -16,7 +17,7 @@ func DisplayHandler(w http.ResponseWriter, r *http.Request) {
 	// Download all files from S3
 	result, err := getURLsFromS3()
 	if err != nil {
-		http.Error(w, "Error downloading from S3", http.StatusBadRequest)
+		http.Error(w, "Error getting files from S3", http.StatusBadRequest)
 		return
 	}
 
@@ -24,14 +25,35 @@ func DisplayHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(result)
 }
 
-func getAllKeys() []string {
-	// TODO: finish once upload metadata works
-	// return []string{"cat.jpeg", "dog.jpeg"}
-	return []string{"cat.jpeg"}
+func getAllKeys() ([]string, error) {
+	// get all S3Keys from File table
+	rows, err := database.DB.Query(`
+		SELECT S3Key FROM File 
+		`)
+	if err != nil {
+		log.Fatal(err)
+		return nil, err
+	}
+
+	var result []string
+	for rows.Next() {
+		var key string
+		if err := rows.Scan(&key); err != nil {
+			log.Fatal(err)
+			return nil, err
+		}
+		result = append(result, key)
+	}
+
+	return result, nil
 }
 
 func getURLsFromS3() ([]string, error) {
-	keys := getAllKeys()
+	keys, err := getAllKeys()
+	if err != nil {
+		log.Fatal(err)
+		return nil, err
+	}
 	file_urls := []string{}
 
 	// Check that all keys exist in S3 bucket
