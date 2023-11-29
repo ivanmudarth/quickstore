@@ -11,6 +11,13 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 )
 
+type FileInfo struct {
+	Key  string
+	URL  string
+	Name string
+	Size string
+}
+
 func DisplayHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Getting all file URLs...")
 
@@ -22,46 +29,46 @@ func DisplayHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(result)
+	data, err := json.Marshal(result)
+	w.Write(data)
 }
 
-func getAllKeys() ([]string, error) {
+func getAllFileInfo() ([]FileInfo, error) {
 	// get all S3Keys from File table
 	rows, err := database.DB.Query(`
-		SELECT S3Key FROM File 
+		SELECT S3Key, Name, Size FROM File 
 		`)
 	if err != nil {
 		log.Fatal(err)
 		return nil, err
 	}
 
-	var result []string
+	var result []FileInfo
 	for rows.Next() {
-		var key string
-		if err := rows.Scan(&key); err != nil {
+		var key, fileName, fileSize string
+		if err := rows.Scan(&key, &fileName, &fileSize); err != nil {
 			log.Fatal(err)
 			return nil, err
 		}
-		result = append(result, key)
+		result = append(result, FileInfo{key, "", fileName, fileSize})
 	}
-
 	return result, nil
 }
 
-func getURLsFromS3() ([]string, error) {
-	keys, err := getAllKeys()
+func getURLsFromS3() ([]FileInfo, error) {
+	info, err := getAllFileInfo()
 	if err != nil {
 		log.Fatal(err)
 		return nil, err
 	}
-	file_urls := []string{}
 
 	// Check that all keys exist in S3 bucket
-	for _, k := range keys {
+	for idx, i := range info {
+		key := i.Key
 		// Input parameters for HeadObject operation
 		input := &s3.HeadObjectInput{
 			Bucket: AWSConfig.bucketName,
-			Key:    aws.String(k),
+			Key:    aws.String(key),
 		}
 
 		// Check if the object (key) exists
@@ -71,10 +78,11 @@ func getURLsFromS3() ([]string, error) {
 			return nil, err
 		}
 
-		url := AWSConfig.endpoint + "/" + *AWSConfig.bucketName + "/" + k
-		file_urls = append(file_urls, url)
+		// Modify file info to include AWS url of file
+		url := AWSConfig.endpoint + "/" + *AWSConfig.bucketName + "/" + key
+		info[idx].URL = url
 	}
 
 	fmt.Println("Got all file URLs\n")
-	return file_urls, nil
+	return info, nil
 }

@@ -11,6 +11,7 @@ Features
 
 Requirements:
 
+- Docker
 - Localstack CLI
 - Golang
 - Gorilla Mux

@@ -15,7 +15,7 @@ import axios from "axios";
 
 function App() {
   const [file, setFile] = useState();
-  const [urls, setURLs] = useState([]);
+  const [displayInfo, setDisplay] = useState([]);
 
   // TODO: input requirements
   // username must be unique (check)
@@ -60,7 +60,7 @@ function App() {
     axios
       .get(url)
       .then((response) => {
-        setURLs(response.data);
+        setDisplay(response.data);
       })
       .catch((error) => {
         console.log(error);
@@ -85,8 +85,12 @@ function App() {
             </form>
             <VStack spacing={4} align="baseline">
               <Text>Uploaded Files:</Text>
-              {urls.map((url) => (
-                <img key={url} src={url} width={200} />
+              {displayInfo.map((info) => (
+                <Box>
+                  <img key={info["Key"]} src={info["URL"]} width={200} />
+                  <Text>{info["Name"]}</Text>
+                  <Text>{info["Size"]} MB</Text>
+                </Box>
               ))}
             </VStack>
           </VStack>
