@@ -10,12 +10,14 @@ import {
   FormLabel,
   FormControl,
   Text,
+  Spacer,
 } from "@chakra-ui/react";
 import axios from "axios";
 
 function App() {
   const [file, setFile] = useState();
   const [displayInfo, setDisplay] = useState([]);
+  const [rawTagInput, setTagInput] = useState("");
 
   // TODO: input requirements
   // username must be unique (check)
@@ -25,8 +27,16 @@ function App() {
     handleDisplay();
   }, []);
 
-  function handleChange(event) {
+  function handleFileChange(event) {
     setFile(event.target.files[0]);
+  }
+
+  function handleTagChange(event) {
+    setTagInput(event.target.value);
+  }
+
+  function processTagInput(rawInput) {
+    return rawInput.split(/[ \t]*,[ \t]*/);
   }
 
   function handleUpload(event) {
@@ -37,13 +47,22 @@ function App() {
     // upload progress bar / disable input/submit while uploading
     // display error message if error in upload
     // user generated tags
+    // clear input values on submit
+    // ensure user tag input is valid (no invalid chars)
     event.preventDefault();
-    const url = "http://localhost:8080/upload";
+
     const formData = new FormData();
+    const userTags = processTagInput(rawTagInput);
+
     formData.append("file", file);
     formData.append("fileName", file.name);
-    const config = { headers: { "content-type": "multipart/form-data" } };
+    userTags.forEach((tag) => {
+      formData.append("tags[]", tag);
+    });
+    formData.append("tags", userTags);
 
+    const url = "http://localhost:8080/upload";
+    const config = { headers: { "content-type": "multipart/form-data" } };
     axios
       .post(url, formData, config)
       .then((response) => {
@@ -73,23 +92,32 @@ function App() {
         <Box>
           <VStack spacing={4} align="baseline">
             <form onSubmit={handleUpload}>
-              <FormControl>
-                <VStack spacing={2} align="baseline">
-                  <FormLabel>Upload a File:</FormLabel>
-                  <Input type="file" onChange={handleChange} />
-                  <Button type="submit" colorScheme="blue" variant="solid">
-                    Upload
-                  </Button>
-                </VStack>
-              </FormControl>
+              <VStack spacing={2} align="baseline">
+                <FormControl isRequired>
+                  <FormLabel>Upload a file:</FormLabel>
+                  <Input type="file" onChange={handleFileChange} />
+                </FormControl>
+                <FormControl>
+                  <FormLabel>Add tags to your file:</FormLabel>
+                  <Input
+                    placeholder="Enter a comma separated list"
+                    onChange={handleTagChange}
+                  ></Input>
+                </FormControl>
+                <Button type="submit" colorScheme="blue" variant="solid">
+                  Upload
+                </Button>
+              </VStack>
             </form>
+            <Spacer />
             <VStack spacing={4} align="baseline">
               <Text>Uploaded Files:</Text>
-              {displayInfo.map((info) => (
-                <Box>
-                  <img key={info["Key"]} src={info["URL"]} width={200} />
+              {displayInfo?.map((info) => (
+                <Box key={info["Key"]}>
+                  <img src={info["URL"]} width={200} />
                   <Text>{info["Name"]}</Text>
                   <Text>{info["Size"]} MB</Text>
+                  <Text>User Tags: {info["UserTags"].join(", ")}</Text>
                 </Box>
               ))}
             </VStack>

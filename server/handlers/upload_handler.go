@@ -21,6 +21,7 @@ func createS3Key() string {
 
 func UploadHandler(w http.ResponseWriter, r *http.Request) {
 	// TODO: add check to ensure only valid file type is received
+	// edgecase: s3 upload fails but metadata does not (and vice versa)
 	fmt.Println("Uploading a file...")
 
 	file, header, err := r.FormFile("file")
@@ -48,7 +49,8 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Upload file's metadata to Postgres
-	err = uploadMetaData(header, key)
+	tags := r.PostForm["tags[]"]
+	err = uploadMetaData(header, key, tags)
 	if err != nil {
 		http.Error(w, "Error uploading file metadata", http.StatusBadRequest)
 	}
@@ -81,18 +83,31 @@ func uploadToS3(fileHeader *multipart.FileHeader, key string) (err error) {
 	return nil
 }
 
-func uploadMetaData(fileHeader *multipart.FileHeader, s3Key string) (err error) {
+func uploadMetaData(fileHeader *multipart.FileHeader, s3Key string, userTags []string) (err error) {
 	fileName := fileHeader.Filename
 	fileSize := float64(fileHeader.Size) / oneMB
 
 	// create new entry in File table
-	_, err = database.DB.Query(`
+	res, err := database.DB.Exec(`
 		INSERT INTO File (S3Key, Name, Size) 
-		VALUES (?, ?, ?)
+		VALUES (?, ?, ?);
 		`, s3Key, fileName, fileSize)
 	if err != nil {
 		log.Fatal(err)
 		return err
+	}
+
+	// create new entry in Tag table for each tag
+	id, err := res.LastInsertId()
+	for _, t := range userTags {
+		_, err := database.DB.Exec(`
+			INSERT INTO Tag (FileID, Name, Type) 
+			VALUES (?, ?, ?);
+			`, id, t, "User")
+		if err != nil {
+			log.Fatal(err)
+			return err
+		}
 	}
 
 	fmt.Println("File metadata uploaded successfully\n")

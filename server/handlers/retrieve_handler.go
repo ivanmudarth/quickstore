@@ -12,10 +12,11 @@ import (
 )
 
 type FileInfo struct {
-	Key  string
-	URL  string
-	Name string
-	Size string
+	Key      string
+	URL      string
+	Name     string
+	Size     string
+	UserTags []string
 }
 
 func DisplayHandler(w http.ResponseWriter, r *http.Request) {
@@ -30,27 +31,63 @@ func DisplayHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	data, err := json.Marshal(result)
+	if err != nil {
+		http.Error(w, "Error getting files from S3", http.StatusBadRequest)
+		return
+	}
 	w.Write(data)
 }
 
-func getAllFileInfo() ([]FileInfo, error) {
-	// get all S3Keys from File table
+func getUserTagsForFile(fileID int) ([]string, error) {
+	// get all tags for current file from File table
 	rows, err := database.DB.Query(`
-		SELECT S3Key, Name, Size FROM File 
+		SELECT Name FROM Tag
+		WHERE FileID = ?
+		`, fileID)
+	if err != nil {
+		log.Fatal(err)
+		return nil, err
+	}
+
+	var userTags []string
+	for rows.Next() {
+		var tag string
+		if err := rows.Scan(&tag); err != nil {
+			log.Fatal(err)
+			return nil, err
+		}
+		userTags = append(userTags, tag)
+	}
+
+	return userTags, nil
+}
+
+func getAllFileInfo() ([]FileInfo, error) {
+	// get all file info from File table
+	rows, err := database.DB.Query(`
+		SELECT FileID, S3Key, Name, Size FROM File 
 		`)
 	if err != nil {
 		log.Fatal(err)
 		return nil, err
 	}
 
+	// process results from queries
 	var result []FileInfo
 	for rows.Next() {
+		var fileID int
 		var key, fileName, fileSize string
-		if err := rows.Scan(&key, &fileName, &fileSize); err != nil {
+		if err := rows.Scan(&fileID, &key, &fileName, &fileSize); err != nil {
 			log.Fatal(err)
 			return nil, err
 		}
-		result = append(result, FileInfo{key, "", fileName, fileSize})
+
+		userTags, err := getUserTagsForFile(fileID)
+		if err != nil {
+			return nil, err
+		}
+
+		result = append(result, FileInfo{key, "", fileName, fileSize, userTags})
 	}
 	return result, nil
 }
@@ -58,7 +95,6 @@ func getAllFileInfo() ([]FileInfo, error) {
 func getURLsFromS3() ([]FileInfo, error) {
 	info, err := getAllFileInfo()
 	if err != nil {
-		log.Fatal(err)
 		return nil, err
 	}
 
