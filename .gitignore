@@ -24,6 +24,7 @@ yarn-error.log*
 
 # General
 .DS_Store
+.env
 
 # Binaries for programs and plugins
 *.exe

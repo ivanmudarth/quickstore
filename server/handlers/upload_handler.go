@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"../database"
+	"../tags"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
@@ -48,12 +49,21 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Upload file's metadata to Postgres
+	// Upload file's metadata and user tags to MySQL
 	tags := r.PostForm["tags[]"]
-	err = uploadMetaData(header, key, tags)
+	fileEntryID, err := uploadMetaData(header, key, tags)
 	if err != nil {
 		http.Error(w, "Error uploading file metadata", http.StatusBadRequest)
+		return
 	}
+
+	// Upload file's auto tags to MySQL
+	err = uploadAutoTags(header, fileEntryID)
+	if err != nil {
+		http.Error(w, "Error uploading file autotags", http.StatusBadRequest)
+		return
+	}
+
 	w.Write([]byte("File uploaded successfully"))
 }
 
@@ -83,7 +93,7 @@ func uploadToS3(fileHeader *multipart.FileHeader, key string) (err error) {
 	return nil
 }
 
-func uploadMetaData(fileHeader *multipart.FileHeader, s3Key string, userTags []string) (err error) {
+func uploadMetaData(fileHeader *multipart.FileHeader, s3Key string, userTags []string) (int64, error) {
 	fileName := fileHeader.Filename
 	fileSize := float64(fileHeader.Size) / oneMB
 
@@ -94,11 +104,11 @@ func uploadMetaData(fileHeader *multipart.FileHeader, s3Key string, userTags []s
 		`, s3Key, fileName, fileSize)
 	if err != nil {
 		log.Fatal(err)
-		return err
+		return -1, err
 	}
 
-	// create new entry in Tag table for each tag
-	id, err := res.LastInsertId()
+	// create new entry in Tag table for each user tag
+	id, _ := res.LastInsertId()
 	for _, t := range userTags {
 		_, err := database.DB.Exec(`
 			INSERT INTO Tag (FileID, Name, Type) 
@@ -106,10 +116,33 @@ func uploadMetaData(fileHeader *multipart.FileHeader, s3Key string, userTags []s
 			`, id, t, "User")
 		if err != nil {
 			log.Fatal(err)
-			return err
+			return -1, err
 		}
 	}
 
 	fmt.Println("File metadata uploaded successfully\n")
+	return id, nil
+}
+
+func uploadAutoTags(fileHeader *multipart.FileHeader, fileEntryID int64) (err error) {
+	// get auto tags from Imagga
+	autoTags, err := tags.AutoTagImage(fileHeader)
+	if err != nil {
+		return err
+	}
+
+	// create new entry in Tag table for each auto tag
+	for _, t := range autoTags {
+		_, err := database.DB.Exec(`
+			INSERT INTO Tag (FileID, Name, Type) 
+			VALUES (?, ?, ?);
+			`, fileEntryID, t, "Auto")
+		if err != nil {
+			log.Fatal(err)
+			return err
+		}
+	}
+
+	fmt.Println("File's auto tags uploaded successfully\n")
 	return nil
 }

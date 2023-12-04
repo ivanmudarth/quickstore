@@ -17,5 +17,6 @@ Requirements:
 - Gorilla Mux
 - React
 - AWS Go SDK
-- MySQL (5.6+)
+- MySQL (and create new database)
 - MySQL Go Driver
+- Imagga account

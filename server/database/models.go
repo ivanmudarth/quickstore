@@ -30,7 +30,7 @@ func createFileTable() {
 			UserID INT,
 			S3Key VARCHAR(36) NOT NULL,
 			Name VARCHAR(30) NOT NULL,
-			Size DECIMAL(10, 2) NOT NULL, -- in MB
+			Size DECIMAL(10, 2) NOT NULL, -- NOTE: in MB
 			Type VARCHAR(30),
 			UploadTime DATETIME DEFAULT CURRENT_TIMESTAMP,
 			PRIMARY KEY (FileID),
@@ -49,7 +49,7 @@ func createTagTable() {
 		CREATE TABLE IF NOT EXISTS Tag (
 			TagID INT NOT NULL AUTO_INCREMENT, 
 			FileID INT NOT NULL,
-			Name VARCHAR(15) NOT NULL,
+			Name VARCHAR(40) NOT NULL,
 			Type ENUM("User", "Auto") NOT NULL,
 			PRIMARY KEY (TagID),
 			FOREIGN KEY (FileID) REFERENCES File(FileID)

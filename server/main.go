@@ -2,15 +2,23 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"./database"
 	"./handlers"
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 	"github.com/rs/cors"
 )
 
 func init() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal(".env file couldn't be loaded")
+		return
+	}
+
 	handlers.CreateAWSConfig()
 	database.DBInit()
 }

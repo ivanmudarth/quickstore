@@ -36,6 +36,9 @@ function App() {
   }
 
   function processTagInput(rawInput) {
+    // for case where user input is "  ,   "
+    rawInput = "," + rawInput + ",";
+
     return rawInput.split(/[ \t]*,[ \t]*/);
   }
 
@@ -57,7 +60,9 @@ function App() {
     formData.append("file", file);
     formData.append("fileName", file.name);
     userTags.forEach((tag) => {
-      formData.append("tags[]", tag);
+      if (tag != "") {
+        formData.append("tags[]", tag);
+      }
     });
     formData.append("tags", userTags);
 
@@ -117,7 +122,8 @@ function App() {
                   <img src={info["URL"]} width={200} />
                   <Text>{info["Name"]}</Text>
                   <Text>{info["Size"]} MB</Text>
-                  <Text>User Tags: {info["UserTags"].join(", ")}</Text>
+                  <Text>User Tags: {info["UserTags"]?.join(", ")}</Text>
+                  <Text>Auto Tags: {info["AutoTags"]?.join(", ")}</Text>
                 </Box>
               ))}
             </VStack>

@@ -17,6 +17,7 @@ type FileInfo struct {
 	Name     string
 	Size     string
 	UserTags []string
+	AutoTags []string
 }
 
 func DisplayHandler(w http.ResponseWriter, r *http.Request) {
@@ -38,32 +39,32 @@ func DisplayHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
-func getUserTagsForFile(fileID int) ([]string, error) {
+func getTagsByType(fileID int, tagType string) ([]string, error) {
 	// get all tags for current file from File table
 	rows, err := database.DB.Query(`
 		SELECT Name FROM Tag
-		WHERE FileID = ?
-		`, fileID)
+		WHERE FileID = ? AND Type = ?
+		`, fileID, tagType)
 	if err != nil {
 		log.Fatal(err)
 		return nil, err
 	}
 
-	var userTags []string
+	var tags []string
 	for rows.Next() {
 		var tag string
 		if err := rows.Scan(&tag); err != nil {
 			log.Fatal(err)
 			return nil, err
 		}
-		userTags = append(userTags, tag)
+		tags = append(tags, tag)
 	}
 
-	return userTags, nil
+	return tags, nil
 }
 
 func getAllFileInfo() ([]FileInfo, error) {
-	// get all file info from File table
+	// get necessary file info from File table
 	rows, err := database.DB.Query(`
 		SELECT FileID, S3Key, Name, Size FROM File 
 		`)
@@ -72,7 +73,7 @@ func getAllFileInfo() ([]FileInfo, error) {
 		return nil, err
 	}
 
-	// process results from queries
+	// get file's associated user and auto tags from Tag table
 	var result []FileInfo
 	for rows.Next() {
 		var fileID int
@@ -82,12 +83,17 @@ func getAllFileInfo() ([]FileInfo, error) {
 			return nil, err
 		}
 
-		userTags, err := getUserTagsForFile(fileID)
+		userTags, err := getTagsByType(fileID, "User")
 		if err != nil {
 			return nil, err
 		}
 
-		result = append(result, FileInfo{key, "", fileName, fileSize, userTags})
+		autoTags, err := getTagsByType(fileID, "Auto")
+		if err != nil {
+			return nil, err
+		}
+
+		result = append(result, FileInfo{key, "", fileName, fileSize, userTags, autoTags})
 	}
 	return result, nil
 }
@@ -100,11 +106,11 @@ func getURLsFromS3() ([]FileInfo, error) {
 
 	// Check that all keys exist in S3 bucket
 	for idx, i := range info {
-		key := i.Key
+		s3Key := i.Key
 		// Input parameters for HeadObject operation
 		input := &s3.HeadObjectInput{
 			Bucket: AWSConfig.bucketName,
-			Key:    aws.String(key),
+			Key:    aws.String(s3Key),
 		}
 
 		// Check if the object (key) exists
@@ -115,7 +121,7 @@ func getURLsFromS3() ([]FileInfo, error) {
 		}
 
 		// Modify file info to include AWS url of file
-		url := AWSConfig.endpoint + "/" + *AWSConfig.bucketName + "/" + key
+		url := AWSConfig.endpoint + "/" + *AWSConfig.bucketName + "/" + s3Key
 		info[idx].URL = url
 	}
 
