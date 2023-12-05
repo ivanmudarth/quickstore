@@ -15,7 +15,7 @@ function processTagInput(rawInput) {
   return rawInput.split(/[ \t]*,[ \t]*/);
 }
 
-function UploadFile() {
+function UploadFile(props) {
   const [file, setFile] = useState();
   const [rawTagInput, setTagInput] = useState("");
 
@@ -49,7 +49,7 @@ function UploadFile() {
     formData.append("file", file);
     formData.append("fileName", file.name);
     userTags.forEach((tag) => {
-      if (tag != "") {
+      if (tag !== "") {
         formData.append("tags[]", tag);
       }
     });
@@ -61,6 +61,7 @@ function UploadFile() {
       .post(url, formData, config)
       .then((response) => {
         console.log(response.data);
+        props.finishUpload();
       })
       .catch((error) => {
         console.log(error);

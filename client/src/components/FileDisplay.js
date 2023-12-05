@@ -3,12 +3,13 @@ import { VStack, Text } from "@chakra-ui/react";
 import axios from "axios";
 import File from "./File";
 
-function FileDisplay() {
+function FileDisplay(props) {
   const [displayInfo, setDisplay] = useState([]);
 
+  // is called every time uploadComplete prop is updated
   useEffect(() => {
     handleDisplay();
-  }, []);
+  }, [props.uploadComplete]);
 
   function handleDisplay() {
     const url = "http://localhost:8080/display";
