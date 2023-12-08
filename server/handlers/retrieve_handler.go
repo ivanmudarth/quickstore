@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -9,9 +10,11 @@ import (
 	"../database"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/jmoiron/sqlx"
 )
 
 type FileInfo struct {
+	ID       int
 	Key      string
 	URL      string
 	Name     string
@@ -23,13 +26,27 @@ type FileInfo struct {
 func DisplayHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Getting all file URLs...")
 
-	// Download all files from S3
-	result, err := getURLsFromS3()
+	// Get appropriate file metadata given tag input
+	tags := r.URL.Query()["tags[]"]
+	var fileInfo []FileInfo
+	var err error
+	if len(tags) == 0 {
+		fileInfo, err = getAllFileInfo()
+	} else {
+		fileInfo, err = getSearchFileInfo(tags)
+	}
+	if err != nil {
+		return
+	}
+
+	// verify files to be displayed are in S3
+	result, err := getURLsFromS3(fileInfo)
 	if err != nil {
 		http.Error(w, "Error getting files from S3", http.StatusBadRequest)
 		return
 	}
 
+	// send file info to be displayed back to client
 	w.Header().Set("Content-Type", "application/json")
 	data, err := json.Marshal(result)
 	if err != nil {
@@ -39,71 +56,90 @@ func DisplayHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
-func getTagsByType(fileID int, tagType string) ([]string, error) {
-	// get all tags for current file from File table
-	rows, err := database.DB.Query(`
-		SELECT Name FROM Tag
-		WHERE FileID = ? AND Type = ?
-		`, fileID, tagType)
+func processQueryResults(rows *sql.Rows) ([]FileInfo, error) {
+	// add query results to list of FileInfo objects
+	fileList := []FileInfo{}
+	for rows.Next() {
+		var fileID int
+		var key, fileName, fileSize, tagName, tagType string
+		if err := rows.Scan(&fileID, &key, &fileName,
+			&fileSize, &tagName, &tagType); err != nil {
+			log.Fatal(err)
+			return nil, err
+		}
+
+		// if file entry exists, update its tags. Otherwise create entry
+		lastIdx := len(fileList) - 1
+		if lastIdx >= 0 && fileList[lastIdx].ID == fileID {
+			if tagType == "User" {
+				fileList[lastIdx].UserTags = append(fileList[lastIdx].UserTags, tagName)
+			} else {
+				fileList[lastIdx].AutoTags = append(fileList[lastIdx].AutoTags, tagName)
+			}
+		} else {
+			if tagType == "User" {
+				fileList = append(fileList, FileInfo{fileID, key, "", fileName, fileSize, []string{tagName}, []string{}})
+			} else {
+				fileList = append(fileList, FileInfo{fileID, key, "", fileName, fileSize, []string{}, []string{tagName}})
+			}
+		}
+	}
+
+	return fileList, nil
+}
+
+func getSearchFileInfo(tags []string) ([]FileInfo, error) {
+	// make query string
+	q, args, err := sqlx.In(`
+		SELECT s.FileID, s.S3Key, s.Name, s.Size, t2.Name, t2.Type   
+		FROM (SELECT DISTINCT f.FileID, f.S3Key, f.Name, f.Size
+			FROM File f INNER JOIN Tag t ON f.FileID = t.FileID
+			WHERE LOWER(t.Name) IN (?)) s
+		INNER JOIN Tag t2 ON s.FileID = t2.FileID
+		`, tags)
 	if err != nil {
 		log.Fatal(err)
 		return nil, err
 	}
 
-	var tags []string
-	for rows.Next() {
-		var tag string
-		if err := rows.Scan(&tag); err != nil {
-			log.Fatal(err)
-			return nil, err
-		}
-		tags = append(tags, tag)
+	// make actual query
+	rows, err := database.DB.Query(q, args...)
+	if err != nil {
+		log.Fatal(err)
+		return nil, err
 	}
 
-	return tags, nil
+	// proess results
+	fileList, err := processQueryResults(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	return fileList, nil
 }
 
 func getAllFileInfo() ([]FileInfo, error) {
-	// get necessary file info from File table
+	// get all file info by joining File and Tag table
 	rows, err := database.DB.Query(`
-		SELECT FileID, S3Key, Name, Size FROM File 
+		SELECT f.FileID, f.S3Key, f.Name, f.Size, t.Name, t.Type
+		FROM File f INNER JOIN Tag t ON f.FileID = t.FileID
+		ORDER BY UploadTime
 		`)
 	if err != nil {
 		log.Fatal(err)
 		return nil, err
 	}
 
-	// get file's associated user and auto tags from Tag table
-	var result []FileInfo
-	for rows.Next() {
-		var fileID int
-		var key, fileName, fileSize string
-		if err := rows.Scan(&fileID, &key, &fileName, &fileSize); err != nil {
-			log.Fatal(err)
-			return nil, err
-		}
-
-		userTags, err := getTagsByType(fileID, "User")
-		if err != nil {
-			return nil, err
-		}
-
-		autoTags, err := getTagsByType(fileID, "Auto")
-		if err != nil {
-			return nil, err
-		}
-
-		result = append(result, FileInfo{key, "", fileName, fileSize, userTags, autoTags})
-	}
-	return result, nil
-}
-
-func getURLsFromS3() ([]FileInfo, error) {
-	info, err := getAllFileInfo()
+	// process results
+	fileList, err := processQueryResults(rows)
 	if err != nil {
 		return nil, err
 	}
 
+	return fileList, nil
+}
+
+func getURLsFromS3(info []FileInfo) ([]FileInfo, error) {
 	// Check that all keys exist in S3 bucket
 	for idx, i := range info {
 		s3Key := i.Key

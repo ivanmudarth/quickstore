@@ -7,13 +7,7 @@ import {
   FormControl,
 } from "@chakra-ui/react";
 import axios from "axios";
-
-function processTagInput(rawInput) {
-  // for case where user input is "  ,   "
-  rawInput = "," + rawInput + ",";
-
-  return rawInput.split(/[ \t]*,[ \t]*/);
-}
+import { processTagInput } from "../utils";
 
 function UploadFile(props) {
   const [file, setFile] = useState();
@@ -44,16 +38,14 @@ function UploadFile(props) {
     event.preventDefault();
 
     const formData = new FormData();
+
     const userTags = processTagInput(rawTagInput);
 
     formData.append("file", file);
     formData.append("fileName", file.name);
     userTags.forEach((tag) => {
-      if (tag !== "") {
-        formData.append("tags[]", tag);
-      }
+      formData.append("tags[]", tag);
     });
-    formData.append("tags", userTags);
 
     const url = "http://localhost:8080/upload";
     const config = { headers: { "content-type": "multipart/form-data" } };
