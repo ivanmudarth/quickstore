@@ -1,3 +1,4 @@
+// TODO: move to /components
 export function processTagInput(rawInput) {
   // for case where user input is "  ,   "
   var rawInput = "," + rawInput + ",";
