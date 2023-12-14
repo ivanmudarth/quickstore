@@ -7,25 +7,34 @@ import {
   FormControl,
 } from "@chakra-ui/react";
 import axios from "axios";
-import { processTagInput } from "../utils";
+import { processTagInput } from "./utils/TagInput";
 
-function UploadFile(props) {
-  const [file, setFile] = useState();
-  const [rawTagInput, setTagInput] = useState("");
+type finishUploadType = () => void;
+
+interface Props {
+  finishUpload: finishUploadType;
+}
+
+function UploadFile(props: Props) {
+  const [file, setFile] = useState<{ file: File | null }>({ file: null });
+  const [rawTagInput, setTagInput] = useState<{ rawTagInput: string }>({
+    rawTagInput: "",
+  });
 
   // TODO: input requirements
   // username must be unique (check)
   // filename, each tag must be less than / equal to 15 chars
 
-  function handleFileChange(event) {
-    setFile(event.target.files[0]);
+  function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const selectedFile = (event.target as HTMLInputElement).files?.[0] || null;
+    setFile({ file: selectedFile });
   }
 
-  function handleTagChange(event) {
-    setTagInput(event.target.value);
+  function handleTagChange(event: React.ChangeEvent<HTMLInputElement>) {
+    setTagInput({ rawTagInput: event.target.value });
   }
 
-  function handleUpload(event) {
+  function handleUpload(event: React.FormEvent<HTMLFormElement>) {
     // TODO:
     // limit number of files to add
     // case where no file is selected
@@ -38,11 +47,12 @@ function UploadFile(props) {
     event.preventDefault();
 
     const formData = new FormData();
+    console.log(rawTagInput);
+    const userTags = processTagInput(rawTagInput.rawTagInput);
+    console.log(userTags);
 
-    const userTags = processTagInput(rawTagInput);
-
-    formData.append("file", file);
-    formData.append("fileName", file.name);
+    formData.append("file", file.file ?? "");
+    formData.append("fileName", file.file?.name ?? "");
     userTags.forEach((tag) => {
       formData.append("tags[]", tag);
     });

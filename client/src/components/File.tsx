@@ -1,6 +1,16 @@
 import { Box, Text } from "@chakra-ui/react";
 
-function File(props) {
+interface Props {
+  info: {
+    URL: string;
+    Name: string;
+    Size: string;
+    UserTags: string[];
+    AutoTags: string[];
+  };
+}
+
+function File(props: Props) {
   return (
     <Box>
       <img src={props.info.URL} alt={props.info.Name} width={200} />

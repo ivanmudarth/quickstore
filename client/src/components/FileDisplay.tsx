@@ -3,9 +3,15 @@ import { VStack, Text } from "@chakra-ui/react";
 import axios from "axios";
 import File from "./File";
 
+interface Props {
+  uploadComplete: number;
+  searchInput: string[];
+}
+
 // TODO: bug - search a tag. upload a file. display won't update cause searchInput still has a value
 // maybe have two different effects with different dependencies
-function FileDisplay(props) {
+// TODO: bug - after upload display is updated but not after second update
+function FileDisplay(props: Props) {
   const [displayInfo, setDisplay] = useState([]);
 
   // is called every time uploadComplete prop is updated
@@ -13,7 +19,7 @@ function FileDisplay(props) {
     handleDisplay(props.searchInput);
   }, [props.uploadComplete, props.searchInput]);
 
-  function handleDisplay(searchInput) {
+  function handleDisplay(searchInput: string[]) {
     const params = { tags: searchInput };
     const url = "http://localhost:8080/display";
     axios

@@ -6,21 +6,29 @@ import {
   FormLabel,
   FormControl,
 } from "@chakra-ui/react";
-import { processTagInput } from "../utils";
+import { processTagInput } from "./utils/TagInput";
 
-function TagSearch(props) {
-  const [rawTagInput, setTagInput] = useState("");
+type getSearchInputType = (input: string[]) => void;
 
-  function handleSearch(event) {
+interface Props {
+  getSearchInput: getSearchInputType;
+}
+
+function TagSearch(props: Props) {
+  const [rawTagInput, setTagInput] = useState<{ rawTagInput: string }>({
+    rawTagInput: "",
+  });
+
+  function handleSearch(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     // clean input and send it to FileDisplay component
-    const userTags = processTagInput(rawTagInput);
+    const userTags = processTagInput(rawTagInput.rawTagInput);
     props.getSearchInput(userTags);
   }
 
-  function handleTagChange(event) {
-    setTagInput(event.target.value);
+  function handleTagChange(event: React.ChangeEvent<HTMLInputElement>) {
+    setTagInput({ rawTagInput: event.target.value });
   }
 
   return (
