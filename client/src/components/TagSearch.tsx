@@ -1,12 +1,17 @@
 import React, { useState } from "react";
-import {
-  Input,
-  Button,
-  VStack,
-  FormLabel,
-  FormControl,
-} from "@chakra-ui/react";
+import { VStack, FormLabel, FormControl } from "@chakra-ui/react";
 import { processTagInput } from "./utils/TagInput";
+import { Button } from "./ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
 
 type getSearchInputType = (input: string[]) => void;
 
@@ -33,20 +38,26 @@ function TagSearch(props: Props) {
 
   return (
     <form onSubmit={handleSearch}>
-      <VStack spacing={2} align="baseline">
-        <FormControl isRequired>
-          <FormLabel>Filter files by tag:</FormLabel>
-          <Input
-            htmlSize={39} // TODO: make same as upload input
-            width="auto"
-            placeholder="Enter a comma separated list"
-            onChange={handleTagChange}
-          ></Input>
-        </FormControl>
-        <Button type="submit" colorScheme="blue" variant="solid">
-          Search
-        </Button>
-      </VStack>
+      <Card>
+        <CardHeader>
+          <CardTitle>Search</CardTitle>
+          <CardDescription>
+            Filter your uploaded files by entering tags.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <div className="space-y-1">
+            <Label>Tags:</Label>
+            <Input
+              placeholder="Enter a comma separated list"
+              onChange={handleTagChange}
+            ></Input>
+          </div>
+        </CardContent>
+        <CardFooter>
+          <Button type="submit">Search</Button>
+        </CardFooter>
+      </Card>
     </form>
   );
 }

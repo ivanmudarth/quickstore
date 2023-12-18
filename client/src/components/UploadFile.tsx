@@ -1,13 +1,17 @@
 import React, { useState } from "react";
-import {
-  Input,
-  Button,
-  VStack,
-  FormLabel,
-  FormControl,
-} from "@chakra-ui/react";
 import axios from "axios";
 import { processTagInput } from "./utils/TagInput";
+import { Button } from "./ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
 
 type finishUploadType = () => void;
 
@@ -72,22 +76,31 @@ function UploadFile(props: Props) {
 
   return (
     <form onSubmit={handleUpload}>
-      <VStack spacing={2} align="baseline">
-        <FormControl isRequired>
-          <FormLabel>Upload a file:</FormLabel>
-          <Input type="file" onChange={handleFileChange} />
-        </FormControl>
-        <FormControl>
-          <FormLabel>Add tags to your file:</FormLabel>
-          <Input
-            placeholder="Enter a comma separated list"
-            onChange={handleTagChange}
-          ></Input>
-        </FormControl>
-        <Button type="submit" colorScheme="blue" variant="solid">
-          Upload
-        </Button>
-      </VStack>
+      <Card>
+        <CardHeader>
+          <CardTitle>Upload</CardTitle>
+          <CardDescription>
+            Upload files from you computer here. Make them searchable by adding
+            your own tags.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <div className="space-y-1">
+            <Label htmlFor="file">File:</Label>
+            <Input type="file" onChange={handleFileChange} />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="tags">Tags:</Label>
+            <Input
+              placeholder="Enter a comma separated list"
+              onChange={handleTagChange}
+            ></Input>
+          </div>
+        </CardContent>
+        <CardFooter>
+          <Button type="submit">Upload</Button>
+        </CardFooter>
+      </Card>
     </form>
   );
 }

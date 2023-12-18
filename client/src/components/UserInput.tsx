@@ -1,5 +1,5 @@
-import React, { useState, ComponentType } from "react";
-import { Switch, HStack, Text } from "@chakra-ui/react";
+import React from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 
 interface Props {
   components: {
@@ -8,20 +8,21 @@ interface Props {
   };
 }
 
-// TODO: add TagSearch component
 const UserInput: React.FC<Props> = ({ components }) => {
-  const [isUpload, setIsUpload] = useState(true);
   const { uploadComponent: UploadComponent, searchComponent: SearchComponent } =
     components;
 
   return (
-    <>
-      <HStack>
-        <Text>Upload or Search</Text>
-        <Switch onChange={() => setIsUpload(!isUpload)}></Switch>
-      </HStack>
-      {isUpload ? UploadComponent : SearchComponent}
-    </>
+    <div style={{ paddingTop: "50px" }}>
+      <Tabs defaultValue="upload" className="w-[500px]">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="upload">Upload</TabsTrigger>
+          <TabsTrigger value="search">Search</TabsTrigger>
+        </TabsList>
+        <TabsContent value="upload">{UploadComponent}</TabsContent>
+        <TabsContent value="search">{SearchComponent}</TabsContent>
+      </Tabs>
+    </div>
   );
 };
 

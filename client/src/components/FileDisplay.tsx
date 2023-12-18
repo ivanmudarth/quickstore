@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { VStack, Text } from "@chakra-ui/react";
+import { VStack, Spacer } from "@chakra-ui/react";
 import axios from "axios";
 import File from "./File";
+// @ts-ignore
+import Masonry, { ResponsiveMasonry } from "react-responsive-masonry";
 
 interface Props {
   uploadComplete: number;
@@ -10,7 +12,6 @@ interface Props {
 
 // TODO: bug - search a tag. upload a file. display won't update cause searchInput still has a value
 // maybe have two different effects with different dependencies
-// TODO: bug - after upload display is updated but not after second update
 function FileDisplay(props: Props) {
   const [displayInfo, setDisplay] = useState([]);
 
@@ -34,12 +35,23 @@ function FileDisplay(props: Props) {
   }
 
   return (
-    <VStack spacing={4} align="baseline">
-      <Text>Uploaded Files:</Text>
-      {displayInfo?.map((fileInfo, index) => (
-        <File key={index} info={fileInfo} />
-      ))}
-    </VStack>
+    <div style={{ paddingLeft: "60px", paddingRight: "60px" }}>
+      <h2 className="text-m font-semibold tracking-tight">Uploaded files:</h2>
+      <p className="text-sm text-muted-foreground">
+        {displayInfo.length} files
+      </p>
+      <div style={{ paddingTop: "20px", paddingBottom: "20px" }}>
+        <ResponsiveMasonry
+          columnsCountBreakPoints={{ 500: 1, 700: 2, 950: 3, 1250: 4, 1550: 5 }}
+        >
+          <Masonry columnsCount={5} gutter="20px">
+            {displayInfo?.map((fileInfo, index) => (
+              <File key={index} info={fileInfo} />
+            ))}
+          </Masonry>
+        </ResponsiveMasonry>
+      </div>
+    </div>
   );
 }
 

@@ -19,31 +19,34 @@ function Home() {
   }
 
   return (
-    <Center>
-      <Box>
-        <VStack spacing={4} align="baseline">
-          <UserInput
-            components={{
-              uploadComponent: (
-                <UploadFile
-                  finishUpload={() =>
-                    setUploadComplete({
-                      uploadComplete: uploadComplete.uploadComplete + 1,
-                    })
-                  }
-                />
-              ),
-              searchComponent: <TagSearch getSearchInput={handleCallback} />,
-            }}
-          />
-          <Spacer />
-          <FileDisplay
-            uploadComplete={uploadComplete.uploadComplete}
-            searchInput={searchInput.searchInput}
-          />
-        </VStack>
-      </Box>
-    </Center>
+    <div>
+      <Center>
+        <Box>
+          <VStack spacing={4} align="baseline">
+            <UserInput
+              components={{
+                uploadComponent: (
+                  <UploadFile
+                    finishUpload={() =>
+                      setUploadComplete({
+                        uploadComplete: uploadComplete.uploadComplete + 1,
+                      })
+                    }
+                  />
+                ),
+                searchComponent: <TagSearch getSearchInput={handleCallback} />,
+              }}
+            />
+            <Spacer />
+          </VStack>
+        </Box>
+      </Center>
+
+      <FileDisplay
+        uploadComplete={uploadComplete.uploadComplete}
+        searchInput={searchInput.searchInput}
+      />
+    </div>
   );
 }
 
