@@ -19,6 +19,7 @@ type FileInfo struct {
 	URL      string
 	Name     string
 	Size     string
+	Type     string
 	UserTags []string
 	AutoTags []string
 }
@@ -61,14 +62,14 @@ func processQueryResults(rows *sql.Rows) ([]FileInfo, error) {
 	fileList := []FileInfo{}
 	for rows.Next() {
 		var fileID int
-		var key, fileName, fileSize, tagName, tagType string
+		var key, fileName, fileSize, fileType, tagName, tagType string
 		if err := rows.Scan(&fileID, &key, &fileName,
-			&fileSize, &tagName, &tagType); err != nil {
+			&fileSize, &fileType, &tagName, &tagType); err != nil {
 			log.Fatal(err)
 			return nil, err
 		}
 
-		// if file entry exists, update its tags. Otherwise create entry
+		// if FileInfo entry exists, update its tags. Otherwise create entry
 		lastIdx := len(fileList) - 1
 		if lastIdx >= 0 && fileList[lastIdx].ID == fileID {
 			if tagType == "User" {
@@ -78,9 +79,9 @@ func processQueryResults(rows *sql.Rows) ([]FileInfo, error) {
 			}
 		} else {
 			if tagType == "User" {
-				fileList = append(fileList, FileInfo{fileID, key, "", fileName, fileSize, []string{tagName}, []string{}})
+				fileList = append(fileList, FileInfo{fileID, key, "", fileName, fileSize, fileType, []string{tagName}, []string{}})
 			} else {
-				fileList = append(fileList, FileInfo{fileID, key, "", fileName, fileSize, []string{}, []string{tagName}})
+				fileList = append(fileList, FileInfo{fileID, key, "", fileName, fileSize, fileType, []string{}, []string{tagName}})
 			}
 		}
 	}
@@ -91,8 +92,8 @@ func processQueryResults(rows *sql.Rows) ([]FileInfo, error) {
 func getSearchFileInfo(tags []string) ([]FileInfo, error) {
 	// make query string
 	q, args, err := sqlx.In(`
-		SELECT s.FileID, s.S3Key, s.Name, s.Size, t2.Name, t2.Type   
-		FROM (SELECT DISTINCT f.FileID, f.S3Key, f.Name, f.Size
+		SELECT s.FileID, s.S3Key, s.Name, s.Size, s.Type, t2.Name, t2.Type   
+		FROM (SELECT DISTINCT f.FileID, f.S3Key, f.Name, f.Size, f.Type
 			FROM File f INNER JOIN Tag t ON f.FileID = t.FileID
 			WHERE LOWER(t.Name) IN (?)) s
 		INNER JOIN Tag t2 ON s.FileID = t2.FileID
@@ -118,10 +119,11 @@ func getSearchFileInfo(tags []string) ([]FileInfo, error) {
 	return fileList, nil
 }
 
+// TODO: bug - only files with tags will get returned
 func getAllFileInfo() ([]FileInfo, error) {
 	// get all file info by joining File and Tag table
 	rows, err := database.DB.Query(`
-		SELECT f.FileID, f.S3Key, f.Name, f.Size, t.Name, t.Type
+		SELECT f.FileID, f.S3Key, f.Name, f.Size, f.Type, t.Name, t.Type
 		FROM File f INNER JOIN Tag t ON f.FileID = t.FileID
 		ORDER BY UploadTime
 		`)

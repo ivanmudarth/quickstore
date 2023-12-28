@@ -48,12 +48,12 @@ function UploadFile(props: Props) {
     // user generated tags
     // clear input values on submit
     // ensure user tag input is valid (no invalid chars)
+
+    // restrict file type to pdf and images only
     event.preventDefault();
 
     const formData = new FormData();
-    console.log(rawTagInput);
     const userTags = processTagInput(rawTagInput.rawTagInput);
-    console.log(userTags);
 
     formData.append("file", file.file ?? "");
     formData.append("fileName", file.file?.name ?? "");

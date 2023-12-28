@@ -20,3 +20,4 @@ Requirements:
 - MySQL (and create new database)
 - MySQL Go Driver
 - Imagga account
+- shadcn

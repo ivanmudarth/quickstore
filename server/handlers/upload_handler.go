@@ -5,6 +5,7 @@ import (
 	"log"
 	"mime/multipart"
 	"net/http"
+	"strings"
 
 	"../database"
 	"../tags"
@@ -34,7 +35,7 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 	defer file.Close()
 
 	// Enforce file size limit
-	if header.Size > int64(10*oneMB) {
+	if header.Size > int64(20*oneMB) {
 		http.Error(w, "Size limit of 10 MB reached", http.StatusBadRequest)
 		return
 	}
@@ -49,22 +50,68 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Determine file type
+	fileType, err := getFileType(file)
+	if err != nil {
+		http.Error(w, "Error uploading to S3", http.StatusBadRequest)
+		return
+	}
+
 	// Upload file's metadata and user tags to MySQL
 	tags := r.PostForm["tags[]"]
-	fileEntryID, err := uploadMetaData(header, key, tags)
+	fileEntryID, err := uploadMetaData(header, key, tags, fileType)
 	if err != nil {
 		http.Error(w, "Error uploading file metadata", http.StatusBadRequest)
 		return
 	}
 
 	// Upload file's auto tags to MySQL
-	err = uploadAutoTags(header, fileEntryID)
+	err = uploadAutoTags(header, fileEntryID, fileType)
 	if err != nil {
 		http.Error(w, "Error uploading file autotags", http.StatusBadRequest)
 		return
 	}
 
 	w.Write([]byte("File uploaded successfully"))
+}
+
+func getFileContentType(file multipart.File) (string, error) {
+	// Buffer the first 512 bytes to automatically detect the content type
+	buffer := make([]byte, 512)
+	_, err := file.Read(buffer)
+	if err != nil {
+		return "", err
+	}
+
+	// Reset the file position after reading
+	_, err = file.Seek(0, 0)
+	if err != nil {
+		return "", err
+	}
+
+	// Determine the content type based on the buffered data
+	contentType := http.DetectContentType(buffer)
+
+	return contentType, nil
+}
+
+func getFileType(file multipart.File) (string, error) {
+	contentType, err := getFileContentType(file)
+	if err != nil {
+		log.Fatal(err)
+		return "", nil
+	}
+
+	switch {
+	case strings.HasPrefix(contentType, "image/"):
+		return "Image", nil
+	case strings.HasPrefix(contentType, "application/pdf"):
+		return "Pdf", nil
+	default:
+		// unsupported file type
+		log.Fatal(err)
+		return "", nil
+	}
 }
 
 func uploadToS3(fileHeader *multipart.FileHeader, key string) (err error) {
@@ -93,15 +140,15 @@ func uploadToS3(fileHeader *multipart.FileHeader, key string) (err error) {
 	return nil
 }
 
-func uploadMetaData(fileHeader *multipart.FileHeader, s3Key string, userTags []string) (int64, error) {
+func uploadMetaData(fileHeader *multipart.FileHeader, s3Key string, userTags []string, fileType string) (int64, error) {
 	fileName := fileHeader.Filename
 	fileSize := float64(fileHeader.Size) / oneMB
 
 	// create new entry in File table
 	res, err := database.DB.Exec(`
-		INSERT INTO File (S3Key, Name, Size) 
-		VALUES (?, ?, ?);
-		`, s3Key, fileName, fileSize)
+		INSERT INTO File (S3Key, Name, Size, Type) 
+		VALUES (?, ?, ?, ?);
+		`, s3Key, fileName, fileSize, fileType)
 	if err != nil {
 		log.Fatal(err)
 		return -1, err
@@ -124,11 +171,19 @@ func uploadMetaData(fileHeader *multipart.FileHeader, s3Key string, userTags []s
 	return id, nil
 }
 
-func uploadAutoTags(fileHeader *multipart.FileHeader, fileEntryID int64) (err error) {
-	// get auto tags from Imagga
-	autoTags, err := tags.AutoTagImage(fileHeader)
-	if err != nil {
-		return err
+func uploadAutoTags(fileHeader *multipart.FileHeader, fileEntryID int64, fileType string) (err error) {
+	// tag file based on its type
+	var autoTags []string
+	if fileType == "Image" {
+		autoTags, err = tags.AutoTagImage(fileHeader)
+		if err != nil {
+			return err
+		}
+	} else if fileType == "Pdf" {
+		autoTags, err = tags.AutoTagPdf(fileHeader)
+		if err != nil {
+			return err
+		}
 	}
 
 	// create new entry in Tag table for each auto tag

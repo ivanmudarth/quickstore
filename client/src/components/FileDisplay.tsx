@@ -12,6 +12,7 @@ interface Props {
 
 // TODO: bug - search a tag. upload a file. display won't update cause searchInput still has a value
 // maybe have two different effects with different dependencies
+// TODO: display message if no search results or no files uploaded yet
 function FileDisplay(props: Props) {
   const [displayInfo, setDisplay] = useState([]);
 

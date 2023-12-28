@@ -8,12 +8,10 @@ export function processTagInput(rawInput: string) {
   // remove empty string items
   var cleanInput = [];
   for (var tag of splitInput) {
-    console.log(splitInput);
     if (tag !== "") {
       cleanInput.push(tag.toLowerCase());
     }
   }
 
-  console.log(cleanInput);
   return cleanInput;
 }
