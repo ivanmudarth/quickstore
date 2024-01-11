@@ -33,7 +33,6 @@ function UrlUpload(props: FinishUploadProp) {
     userTags.forEach((tag) => {
       formData.append("tags[]", tag);
     });
-    console.log(formData.get("tags[]"));
     const url = "http://localhost:8080/upload_url";
     const config = { headers: { "content-type": "multipart/form-data" } };
     axios

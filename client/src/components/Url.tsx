@@ -17,7 +17,13 @@ function Url(props: Props) {
             src={props.urlinfo.ImageURL}
             alt={props.urlinfo.Title}
             className="rounded-md"
-            style={{ maxHeight: "150px" }}
+            style={{
+              width: "1024px",
+              height: "2500px",
+              objectFit: "cover", // This property will crop the image to fit the specified dimensions
+              objectPosition: "top left",
+              maxHeight: "150px", // This is to set a maximum height if needed
+            }}
           />
         </a>
       </div>

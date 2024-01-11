@@ -13,11 +13,6 @@ import (
 	"../tags"
 )
 
-// :
-// change get all files query, change search files query,
-// make sure response handles new objects properly
-// rename FILE to ITEM where appropriate
-// use website ss instead of image
 func UrlUploadHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseMultipartForm(32 << 20)
 	url := r.FormValue("url")
@@ -47,6 +42,37 @@ func UrlUploadHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Url uploaded successfully"))
 }
 
+func getSiteScreenshot(websiteURL string) (string, error) {
+	// make a request to opengraph.io api to get screenshot of website
+	encodedURL := url.PathEscape(websiteURL)
+	requestURL := "https://opengraph.io/api/1.1/screenshot/" + encodedURL + "?app_id=" + os.Getenv("OPENGRAPHIO_API_KEY") + "&dimensions=sm"
+	client := &http.Client{}
+	req, _ := http.NewRequest("GET", requestURL, nil)
+
+	resp, err := client.Do(req)
+
+	if err != nil {
+		log.Fatal(err)
+		return "", err
+	}
+
+	// process response
+	defer resp.Body.Close()
+
+	var openGraphResponse map[string]string
+	resp_body, err := io.ReadAll(resp.Body)
+	json.Unmarshal(resp_body, &openGraphResponse)
+	if err != nil {
+		log.Fatal(err)
+		return "", err
+	}
+
+	screenshot := openGraphResponse["screenshotUrl"]
+	fmt.Println(screenshot)
+
+	return screenshot, nil
+}
+
 func getUrlOpenGraph(websiteURL string) (string, string, error) {
 	// make a request to opengraph.io api to get websites image and title
 	encodedURL := url.PathEscape(websiteURL)
@@ -73,7 +99,11 @@ func getUrlOpenGraph(websiteURL string) (string, string, error) {
 	}
 
 	title := openGraphResponse["hybridGraph"]["title"].(string)
-	imageURL := openGraphResponse["hybridGraph"]["image"].(string)
+	imageURL, err := getSiteScreenshot(websiteURL)
+	if err != nil {
+		log.Fatal(err)
+		return "", "", err
+	}
 
 	return title, imageURL, nil
 }
