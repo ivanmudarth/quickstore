@@ -26,7 +26,8 @@ func init() {
 func main() {
 	r := mux.NewRouter()
 
-	r.HandleFunc("/upload", handlers.UploadHandler).Methods("POST")
+	r.HandleFunc("/upload_file", handlers.FileUploadHandler).Methods("POST")
+	r.HandleFunc("/upload_url", handlers.UrlUploadHandler).Methods("POST")
 	r.HandleFunc("/display", handlers.DisplayHandler).Methods("GET")
 	http.Handle("/", r)
 

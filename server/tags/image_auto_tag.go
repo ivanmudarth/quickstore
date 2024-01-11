@@ -100,7 +100,7 @@ func AutoTagImage(fileHeader *multipart.FileHeader) ([]string, error) {
 	defer resp.Body.Close()
 
 	var output imaggaResponse
-	resp_body, _ := io.ReadAll(resp.Body)
+	resp_body, err := io.ReadAll(resp.Body)
 	json.Unmarshal(resp_body, &output)
 	if err != nil {
 		log.Fatal(err)

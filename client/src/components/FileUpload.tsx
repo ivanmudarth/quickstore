@@ -1,25 +1,13 @@
-import React, { useState } from "react";
-import axios from "axios";
-import { processTagInput } from "./utils/TagInput";
-import { Button } from "./ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "./ui/card";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
+import { Button } from "./ui/button";
+import { CardContent, CardFooter } from "./ui/card";
+import axios from "axios";
+import { processTagInput } from "./utils/TagInput";
+import React, { useState } from "react";
+import { FinishUploadProp } from "./utils/sharedTypes";
 
-type finishUploadType = () => void;
-
-interface Props {
-  finishUpload: finishUploadType;
-}
-
-function UploadFile(props: Props) {
+function FileUpload(props: FinishUploadProp) {
   const [file, setFile] = useState<{ file: File | null }>({ file: null });
   const [rawTagInput, setTagInput] = useState<{ rawTagInput: string }>({
     rawTagInput: "",
@@ -50,6 +38,7 @@ function UploadFile(props: Props) {
     // ensure user tag input is valid (no invalid chars)
 
     // restrict file type to pdf and images only
+
     event.preventDefault();
 
     const formData = new FormData();
@@ -61,7 +50,7 @@ function UploadFile(props: Props) {
       formData.append("tags[]", tag);
     });
 
-    const url = "http://localhost:8080/upload";
+    const url = "http://localhost:8080/upload_file";
     const config = { headers: { "content-type": "multipart/form-data" } };
     axios
       .post(url, formData, config)
@@ -76,33 +65,24 @@ function UploadFile(props: Props) {
 
   return (
     <form onSubmit={handleUpload}>
-      <Card>
-        <CardHeader>
-          <CardTitle>Upload</CardTitle>
-          <CardDescription>
-            Upload files from you computer here. Make them searchable by adding
-            your own tags.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          <div className="space-y-1">
-            <Label htmlFor="file">File:</Label>
-            <Input type="file" onChange={handleFileChange} />
-          </div>
-          <div className="space-y-1">
-            <Label htmlFor="tags">Tags:</Label>
-            <Input
-              placeholder="Enter a comma separated list"
-              onChange={handleTagChange}
-            ></Input>
-          </div>
-        </CardContent>
-        <CardFooter>
-          <Button type="submit">Upload</Button>
-        </CardFooter>
-      </Card>
+      <CardContent className="space-y-2">
+        <div className="space-y-1">
+          <Label htmlFor="file">File:</Label>
+          <Input type="file" onChange={handleFileChange} />
+        </div>
+        <div className="space-y-1">
+          <Label htmlFor="tags">Tags:</Label>
+          <Input
+            placeholder="Enter a comma separated list"
+            onChange={handleTagChange}
+          ></Input>
+        </div>
+      </CardContent>
+      <CardFooter>
+        <Button type="submit">Upload</Button>
+      </CardFooter>
     </form>
   );
 }
 
-export default UploadFile;
+export default FileUpload;

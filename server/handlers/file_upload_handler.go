@@ -21,7 +21,7 @@ func createS3Key() string {
 	return uuid.New().String()
 }
 
-func UploadHandler(w http.ResponseWriter, r *http.Request) {
+func FileUploadHandler(w http.ResponseWriter, r *http.Request) {
 	// TODO: add check to ensure only valid file type is received
 	// edgecase: s3 upload fails but metadata does not (and vice versa)
 	fmt.Println("Uploading a file...")
@@ -59,14 +59,14 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Upload file's metadata and user tags to MySQL
 	tags := r.PostForm["tags[]"]
-	fileEntryID, err := uploadMetaData(header, key, tags, fileType)
+	fileEntryID, err := uploadFileMetadata(header, key, tags, fileType)
 	if err != nil {
 		http.Error(w, "Error uploading file metadata", http.StatusBadRequest)
 		return
 	}
 
 	// Upload file's auto tags to MySQL
-	err = uploadAutoTags(header, fileEntryID, fileType)
+	err = uploadFileAutoTags(header, fileEntryID, fileType)
 	if err != nil {
 		http.Error(w, "Error uploading file autotags", http.StatusBadRequest)
 		return
@@ -140,7 +140,7 @@ func uploadToS3(fileHeader *multipart.FileHeader, key string) (err error) {
 	return nil
 }
 
-func uploadMetaData(fileHeader *multipart.FileHeader, s3Key string, userTags []string, fileType string) (int64, error) {
+func uploadFileMetadata(fileHeader *multipart.FileHeader, s3Key string, userTags []string, fileType string) (int64, error) {
 	fileName := fileHeader.Filename
 	fileSize := float64(fileHeader.Size) / oneMB
 
@@ -171,7 +171,7 @@ func uploadMetaData(fileHeader *multipart.FileHeader, s3Key string, userTags []s
 	return id, nil
 }
 
-func uploadAutoTags(fileHeader *multipart.FileHeader, fileEntryID int64, fileType string) (err error) {
+func uploadFileAutoTags(fileHeader *multipart.FileHeader, fileEntryID int64, fileType string) (err error) {
 	// tag file based on its type
 	var autoTags []string
 	if fileType == "Image" {

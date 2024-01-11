@@ -1,15 +1,9 @@
+import { FileInfo } from "./utils/sharedTypes";
 // @ts-ignore
 import pdfIcon from "../public/PDF_icon.png";
 
 interface Props {
-  info: {
-    URL: string;
-    Name: string;
-    Size: string;
-    Type: string;
-    UserTags: string[];
-    AutoTags: string[];
-  };
+  fileinfo: FileInfo;
 }
 
 function File(props: Props) {
@@ -20,16 +14,16 @@ function File(props: Props) {
       {...props}
     >
       <div className="overflow-hidden">
-        {props.info.Type == "Image" ? (
+        {props.fileinfo.Type == "Image" ? (
           <img
-            src={props.info.URL}
-            alt={props.info.Name}
+            src={props.fileinfo.FileURL}
+            alt={props.fileinfo.Name}
             className="rounded-md"
             // style={{ maxWidth: "300px", maxHeight: "300px" }}
           />
         ) : (
           <a
-            href={props.info.URL}
+            href={props.fileinfo.FileURL}
             // download={encodeURIComponent(props.info.Name)} TODO: doesn't work
           >
             <img
@@ -43,14 +37,18 @@ function File(props: Props) {
       </div>
       <div className="space-y-1 text-sm">
         <h3 className="font-medium leading-none" style={{ fontSize: "medium" }}>
-          {props.info.Name}
+          {props.fileinfo.Name}
         </h3>
-        <p className="text-s text-muted-foreground">{props.info.Size} MB</p>
-        <p className="text-s text-muted-foreground">
-          <u>User Tags:</u> {props.info.UserTags?.join(", ")}
+        <p
+          className="text-s text-muted-foreground" // TODO: add < if size is less than 0.01 MB
+        >
+          {props.fileinfo.Size} MB
         </p>
         <p className="text-s text-muted-foreground">
-          <u>Auto Tags:</u> {props.info.AutoTags?.join(", ")}
+          <u>User Tags:</u> {props.fileinfo.UserTags?.join(", ")}
+        </p>
+        <p className="text-s text-muted-foreground">
+          <u>Auto Tags:</u> {props.fileinfo.AutoTags?.join(", ")}
         </p>
       </div>
     </div>

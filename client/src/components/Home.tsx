@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { VStack, Spacer, Box, Center } from "@chakra-ui/react";
-import UploadFile from "./UploadFile";
-import FileDisplay from "./FileDisplay";
+import Upload from "./Upload";
+import ItemDisplay from "./ItemDisplay";
 import UserInput from "./UserInput";
 import TagSearch from "./TagSearch";
 
@@ -26,7 +26,7 @@ function Home() {
             <UserInput
               components={{
                 uploadComponent: (
-                  <UploadFile
+                  <Upload
                     finishUpload={() =>
                       setUploadComplete({
                         uploadComplete: uploadComplete.uploadComplete + 1,
@@ -42,7 +42,7 @@ function Home() {
         </Box>
       </Center>
 
-      <FileDisplay
+      <ItemDisplay
         uploadComplete={uploadComplete.uploadComplete}
         searchInput={searchInput.searchInput}
       />
