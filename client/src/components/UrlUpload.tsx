@@ -6,7 +6,7 @@ import axios from "axios";
 import { processTagInput } from "./utils/TagInput";
 import React, { useState } from "react";
 import { FinishUploadProp } from "./utils/sharedTypes";
-import { Spinner } from "@chakra-ui/react";
+import { Spinner, useToast } from "@chakra-ui/react";
 
 function UrlUpload(props: FinishUploadProp) {
   const [urlInput, setUrlInput] = useState<{ urlInput: string }>({
@@ -18,6 +18,7 @@ function UrlUpload(props: FinishUploadProp) {
   const [isLoading, setIsLoading] = useState<{ isLoading: Boolean }>({
     isLoading: false,
   });
+  const toast = useToast();
 
   function handleTagChange(event: React.ChangeEvent<HTMLInputElement>) {
     setTagInput({ rawTagInput: event.target.value });
@@ -46,9 +47,25 @@ function UrlUpload(props: FinishUploadProp) {
         console.log(response.data);
         setIsLoading({ isLoading: false });
         props.finishUpload();
+        toast({
+          title: "URL uploaded",
+          description:
+            "Your website URL has been successfully uploaded to the database.",
+          status: "success",
+          duration: 5000,
+          isClosable: true,
+        });
       })
       .catch((error) => {
         console.log(error);
+        setIsLoading({ isLoading: false });
+        toast({
+          title: "Upload error",
+          description: "Your URL was not successfully uploaded.",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
       });
   }
 

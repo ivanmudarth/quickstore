@@ -1,6 +1,7 @@
 import { FileInfo } from "./utils/sharedTypes";
 // @ts-ignore
 import pdfIcon from "../public/PDF_icon.png";
+import { Tag } from "@chakra-ui/react";
 
 interface Props {
   fileinfo: FileInfo;
@@ -41,15 +42,20 @@ function File(props: Props) {
         </h3>
         <p
           className="text-s text-muted-foreground" // TODO: add < if size is less than 0.01 MB
+          style={{ marginBottom: "8px" }}
         >
           {props.fileinfo.Size} MB
         </p>
-        <p className="text-s text-muted-foreground">
-          <u>User Tags:</u> {props.fileinfo.UserTags?.join(", ")}
-        </p>
-        <p className="text-s text-muted-foreground">
-          <u>Auto Tags:</u> {props.fileinfo.AutoTags?.join(", ")}
-        </p>
+        {props.fileinfo.UserTags?.map((tag, _) => (
+          <Tag size={"sm"} style={{ marginRight: "10px" }}>
+            {tag}
+          </Tag>
+        ))}
+        {props.fileinfo.AutoTags?.map((tag, _) => (
+          <Tag size={"sm"} color={"green"} style={{ marginRight: "10px" }}>
+            {tag}
+          </Tag>
+        ))}
       </div>
     </div>
   );

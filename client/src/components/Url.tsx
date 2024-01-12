@@ -1,4 +1,5 @@
 import { UrlInfo } from "./utils/sharedTypes";
+import { Tag } from "@chakra-ui/react";
 
 interface Props {
   urlinfo: UrlInfo;
@@ -33,15 +34,20 @@ function Url(props: Props) {
         </h3>
         <p
           className="text-s text-muted-foreground" // TODO: add < if size is less than 0.01 MB
+          style={{ marginBottom: "8px" }}
         >
           {props.urlinfo.URL}
         </p>
-        <p className="text-s text-muted-foreground">
-          <u>User Tags:</u> {props.urlinfo.UserTags?.join(", ")}
-        </p>
-        <p className="text-s text-muted-foreground">
-          <u>Auto Tags:</u> {props.urlinfo.AutoTags?.join(", ")}
-        </p>
+        {props.urlinfo.UserTags?.map((tag, _) => (
+          <Tag size={"sm"} style={{ marginRight: "10px" }}>
+            {tag}
+          </Tag>
+        ))}
+        {props.urlinfo.AutoTags?.map((tag, _) => (
+          <Tag size={"sm"} color={"green"} style={{ marginRight: "10px" }}>
+            {tag}
+          </Tag>
+        ))}
       </div>
     </div>
   );

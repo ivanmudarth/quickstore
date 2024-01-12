@@ -6,7 +6,7 @@ import axios from "axios";
 import { processTagInput } from "./utils/TagInput";
 import React, { useState } from "react";
 import { FinishUploadProp } from "./utils/sharedTypes";
-import { Spinner } from "@chakra-ui/react";
+import { Spinner, useToast } from "@chakra-ui/react";
 
 function FileUpload(props: FinishUploadProp) {
   const [file, setFile] = useState<{ file: File | null }>({ file: null });
@@ -16,6 +16,7 @@ function FileUpload(props: FinishUploadProp) {
   const [isLoading, setIsLoading] = useState<{ isLoading: Boolean }>({
     isLoading: false,
   });
+  const toast = useToast();
 
   // TODO: input requirements
   // username must be unique (check)
@@ -63,9 +64,25 @@ function FileUpload(props: FinishUploadProp) {
         console.log(response.data);
         setIsLoading({ isLoading: false });
         props.finishUpload();
+        toast({
+          title: "File uploaded",
+          description:
+            "Your file has been successfully uploaded to the database.",
+          status: "success",
+          duration: 5000,
+          isClosable: true,
+        });
       })
       .catch((error) => {
         console.log(error);
+        setIsLoading({ isLoading: false });
+        toast({
+          title: "Upload error",
+          description: "Your file was not successfully uploaded.",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
       });
   }
 
