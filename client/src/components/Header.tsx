@@ -1,4 +1,5 @@
-import { Logo } from "./utils/Logo";
+// @ts-ignore
+import logo from "../public/logo.png";
 
 function Header() {
   return (
@@ -6,7 +7,14 @@ function Header() {
     <header className="sticky top-0 z-50 w-full bg-foreground text-primary-foreground shadow ">
       <div className="container flex h-14 items-center">
         <div className="mr-4 hidden md:flex">
-          <Logo />
+          <div className="mr-2">
+            <img
+              src={logo}
+              alt="PDF Logo"
+              className="rounded-md"
+              style={{ height: "30px", width: "30px" }}
+            />
+          </div>
           <div className="mr-6 flex items-center space-x-2">
             <span className="hidden font-bold sm:inline-block">Quickstore</span>
           </div>

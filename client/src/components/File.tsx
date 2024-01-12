@@ -10,7 +10,7 @@ function File(props: Props) {
   return (
     <div
       className={"space-y-3 w-[275px] rounded-md border"}
-      style={{ padding: "15px" }}
+      style={{ padding: "15px", boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)" }}
       {...props}
     >
       <div className="overflow-hidden">
