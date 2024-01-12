@@ -11,6 +11,7 @@ import {
 } from "./ui/card";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
+import { Spinner } from "@chakra-ui/react";
 
 type getSearchInputType = (input: string[]) => void;
 
@@ -22,13 +23,18 @@ function TagSearch(props: Props) {
   const [rawTagInput, setTagInput] = useState<{ rawTagInput: string }>({
     rawTagInput: "",
   });
+  const [isLoading, setIsLoading] = useState<{ isLoading: Boolean }>({
+    isLoading: false,
+  });
 
   function handleSearch(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     // clean input and send it to FileDisplay component
+    setIsLoading({ isLoading: true });
     const userTags = processTagInput(rawTagInput.rawTagInput);
     props.getSearchInput(userTags);
+    setIsLoading({ isLoading: false });
   }
 
   function handleTagChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -54,7 +60,14 @@ function TagSearch(props: Props) {
           </div>
         </CardContent>
         <CardFooter>
-          <Button type="submit">Search</Button>
+          <Button
+            type="submit"
+            disabled={!!isLoading.isLoading}
+            style={{ marginRight: "10px" }}
+          >
+            Search
+          </Button>
+          {isLoading.isLoading && <Spinner />}
         </CardFooter>
       </Card>
     </form>

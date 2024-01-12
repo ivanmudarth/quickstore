@@ -6,11 +6,15 @@ import axios from "axios";
 import { processTagInput } from "./utils/TagInput";
 import React, { useState } from "react";
 import { FinishUploadProp } from "./utils/sharedTypes";
+import { Spinner } from "@chakra-ui/react";
 
 function FileUpload(props: FinishUploadProp) {
   const [file, setFile] = useState<{ file: File | null }>({ file: null });
   const [rawTagInput, setTagInput] = useState<{ rawTagInput: string }>({
     rawTagInput: "",
+  });
+  const [isLoading, setIsLoading] = useState<{ isLoading: Boolean }>({
+    isLoading: false,
   });
 
   // TODO: input requirements
@@ -52,10 +56,12 @@ function FileUpload(props: FinishUploadProp) {
 
     const url = "http://localhost:8080/upload_file";
     const config = { headers: { "content-type": "multipart/form-data" } };
+    setIsLoading({ isLoading: true });
     axios
       .post(url, formData, config)
       .then((response) => {
         console.log(response.data);
+        setIsLoading({ isLoading: false });
         props.finishUpload();
       })
       .catch((error) => {
@@ -79,7 +85,14 @@ function FileUpload(props: FinishUploadProp) {
         </div>
       </CardContent>
       <CardFooter>
-        <Button type="submit">Upload</Button>
+        <Button
+          type="submit"
+          disabled={!!isLoading.isLoading}
+          style={{ marginRight: "10px" }}
+        >
+          Upload
+        </Button>
+        {isLoading.isLoading && <Spinner />}
       </CardFooter>
     </form>
   );
