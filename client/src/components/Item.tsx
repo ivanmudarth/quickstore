@@ -1,14 +1,10 @@
 import Url from "./Url";
 // @ts-ignore
 import File from "./File";
-import { FileInfo, UrlInfo } from "./utils/sharedTypes";
+import { ItemInfo } from "./utils/sharedTypes";
 
 interface Props {
-  info: {
-    FileInfo: FileInfo;
-    UrlInfo: UrlInfo;
-    UploadTime: string;
-  };
+  info: ItemInfo;
 }
 
 function Item(props: Props) {

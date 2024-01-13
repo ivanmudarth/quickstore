@@ -1,6 +1,6 @@
 import { FileInfo } from "./utils/sharedTypes";
 // @ts-ignore
-import pdfIcon from "../public/PDF_icon.png";
+import pdfIcon from "../public/pdf_icon.png";
 import { Tag } from "@chakra-ui/react";
 
 interface Props {

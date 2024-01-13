@@ -25,3 +25,9 @@ export interface UrlInfo {
   UserTags: string[];
   AutoTags: string[];
 }
+
+export interface ItemInfo {
+  FileInfo: FileInfo;
+  UrlInfo: UrlInfo;
+  UploadTime: string;
+}
