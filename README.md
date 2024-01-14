@@ -44,21 +44,52 @@ User and auto tags allow files and URLs to be searchable. A list of tags can be 
 
 ## Installation
 
-TODO 
+### Prerequisites 
+
+- [Localstack CLI](https://docs.localstack.cloud/getting-started/installation/#localstack-cli)
+- MySQL Workbench 8.0+
+- Golang version go1.21.4+
+- Node v20.7.0+
+- npm 10.1.0+
+- [shadcn/ui CLI](https://ui.shadcn.com/docs/cli)
+
+Complete the following steps
+
+1. Install dependencies for the client:
+
+```
+cd client
+npm install
+```
+
+2. Install dependencies for the server:
+```
+cd server
+go get -d ./...
+```
+
+3. After installing MySQL Workbench, create a database with a name, user, and password that you set. Create the env file `server/.env` using the same structure as `server/.env.example`. Add your database name, user, and password here. 
+
+4. Create a free account on [Imagga](https://imagga.com/) and [Opengraph.io](https://www.opengraph.io/). Add your API keys to the env file. 
 
 ## Run Locally
 
-TODO
+Complete the following steps, each from the separate terminal tab
 
-### Requirements:
+1. Start up Localstack on Docker
+```
+localstack start
+```
 
-- Docker
-- Localstack CLI
-- Golang
-- Gorilla Mux
-- React
-- AWS Go SDK
-- MySQL (and create new database)
-- MySQL Go Driver
-- Imagga account
-- shadcn
+2. Start the Golang server
+```
+cd server
+go run main.go
+```
+
+3. Run the client
+```
+cd client
+npm start
+```
+
