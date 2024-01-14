@@ -6,6 +6,10 @@
 
 Quickstore lets you upload files and website links then effortlessly find them later using auto-tagging functionality 
 
+I often find links to articles I want to read later or images of my notes that I want to refer to in the future. But it was awkward trying to use existing tools to store these items. Google Drive only stores articles, Apple Notes only stores images and text. 
+
+I would iMessage myself links or files but searching through many uploads became very difficult. Quickstore fixes this frustration I have and it became a good way for me to learn Golang and AWS. 
+
 ## Features
 
 ### Upload / Store
