@@ -13,7 +13,7 @@ const UserInput: React.FC<Props> = ({ components }) => {
     components;
 
   return (
-    <div style={{ paddingTop: "50px" }}>
+    <div style={{ paddingTop: "30px" }}>
       <Tabs defaultValue="upload" className="w-[500px]">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="upload">Upload</TabsTrigger>

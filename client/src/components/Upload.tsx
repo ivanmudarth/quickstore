@@ -34,7 +34,7 @@ function Upload(props: FinishUploadProp) {
   return (
     <Card>
       <CardHeader>
-        <Flex justifyContent="space-between" alignItems="center" py={2}>
+        <Flex justifyContent="space-between" alignItems="center" py={0.5}>
           <CardTitle>Upload</CardTitle>
           <Select onValueChange={handleUploadTypeSwitch}>
             <SelectTrigger className="w-[130px]">
