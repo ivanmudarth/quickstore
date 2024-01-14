@@ -38,7 +38,7 @@ func CreateAWSConfig() {
 	s3Client := s3.New(sess)
 
 	// Create new bucket if it doesn't exist
-	bucketName := "my-bucket"
+	bucketName := os.Getenv("S3_BUCKET_NAME")
 	_, err := s3Client.CreateBucket(&s3.CreateBucketInput{
 		Bucket: &bucketName,
 	})

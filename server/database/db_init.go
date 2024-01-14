@@ -15,8 +15,8 @@ func DBInit() {
 	var err error
 	user := os.Getenv("MYSQL_USER")
 	password := os.Getenv("MYSQL_PASSWORD")
-	// TODO: change db name
-	DB, err = sql.Open("mysql", user+":"+password+"@tcp(127.0.0.1:3306)/test_db")
+	db_name := os.Getenv("MYSQL_DB_NAME")
+	DB, err = sql.Open("mysql", user+":"+password+"@tcp(127.0.0.1:3306)/"+db_name)
 	if err != nil {
 		log.Fatal(err)
 		os.Exit(1)
