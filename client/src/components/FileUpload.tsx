@@ -16,6 +16,9 @@ function FileUpload(props: FinishUploadProp) {
   const [isLoading, setIsLoading] = useState<{ isLoading: Boolean }>({
     isLoading: false,
   });
+  const [fileInputKey, setfileInputKey] = useState<{ fileInputKey: string }>({
+    fileInputKey: "",
+  });
   const toast = useToast();
 
   // TODO: input requirements
@@ -57,7 +60,9 @@ function FileUpload(props: FinishUploadProp) {
 
     const url = "http://localhost:8080/upload_file";
     const config = { headers: { "content-type": "multipart/form-data" } };
+
     setIsLoading({ isLoading: true });
+
     axios
       .post(url, formData, config)
       .then((response) => {
@@ -72,6 +77,10 @@ function FileUpload(props: FinishUploadProp) {
           duration: 5000,
           isClosable: true,
         });
+        // reset form input
+        setTagInput({ rawTagInput: "" });
+        setFile({ file: null });
+        setfileInputKey({ fileInputKey: Math.random().toString(36) });
       })
       .catch((error) => {
         console.log(error);
@@ -83,6 +92,10 @@ function FileUpload(props: FinishUploadProp) {
           duration: 5000,
           isClosable: true,
         });
+        // reset form input
+        setTagInput({ rawTagInput: "" });
+        setFile({ file: null });
+        setfileInputKey({ fileInputKey: Math.random().toString(36) });
       });
   }
 
@@ -91,13 +104,21 @@ function FileUpload(props: FinishUploadProp) {
       <CardContent className="space-y-2">
         <div className="space-y-1">
           <Label htmlFor="file">File:</Label>
-          <Input type="file" onChange={handleFileChange} />
+          <Input
+            type="file"
+            // value={file.file ? file.file.name : ""}
+            onChange={handleFileChange}
+            key={fileInputKey.fileInputKey}
+            disabled={!!isLoading.isLoading}
+          />
         </div>
         <div className="space-y-1">
           <Label htmlFor="tags">Tags:</Label>
           <Input
             placeholder="Enter a comma separated list"
+            value={rawTagInput.rawTagInput}
             onChange={handleTagChange}
+            disabled={!!isLoading.isLoading}
           ></Input>
         </div>
       </CardContent>

@@ -40,7 +40,9 @@ function UrlUpload(props: FinishUploadProp) {
     });
     const url = "http://localhost:8080/upload_url";
     const config = { headers: { "content-type": "multipart/form-data" } };
+
     setIsLoading({ isLoading: true });
+
     axios
       .post(url, formData, config)
       .then((response) => {
@@ -55,6 +57,9 @@ function UrlUpload(props: FinishUploadProp) {
           duration: 5000,
           isClosable: true,
         });
+        // reset form input
+        setUrlInput({ urlInput: "" });
+        setTagInput({ rawTagInput: "" });
       })
       .catch((error) => {
         console.log(error);
@@ -66,6 +71,9 @@ function UrlUpload(props: FinishUploadProp) {
           duration: 5000,
           isClosable: true,
         });
+        // reset form input
+        setUrlInput({ urlInput: "" });
+        setTagInput({ rawTagInput: "" });
       });
   }
 
@@ -76,14 +84,18 @@ function UrlUpload(props: FinishUploadProp) {
           <Label htmlFor="url">URL:</Label>
           <Input
             placeholder="Enter a valid website URL"
+            value={urlInput.urlInput}
             onChange={handleUrlChange}
+            disabled={!!isLoading.isLoading}
           ></Input>
         </div>
         <div className="space-y-1">
           <Label htmlFor="tags">Tags:</Label>
           <Input
             placeholder="Enter a comma separated list"
+            value={rawTagInput.rawTagInput}
             onChange={handleTagChange}
+            disabled={!!isLoading.isLoading}
           ></Input>
         </div>
       </CardContent>
