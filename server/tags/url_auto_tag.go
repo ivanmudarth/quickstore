@@ -45,7 +45,10 @@ func AutoTagUrl(url string) ([]string, error) {
 		return nil, err
 	}
 
-	res := GetTopPhrasesFromText(urlText)
+	res, err := GetKeywordsFromText(urlText)
+	if err != nil {
+		return nil, err
+	}
 
 	return res, nil
 }

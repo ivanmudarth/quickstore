@@ -38,7 +38,10 @@ func AutoTagPdf(fileHeader *multipart.FileHeader) ([]string, error) {
 		return nil, err
 	}
 
-	res := GetTopPhrasesFromText(pdfText)
+	res, err := GetKeywordsFromText(pdfText)
+	if err != nil {
+		return nil, err
+	}
 
 	return res, nil
 }
