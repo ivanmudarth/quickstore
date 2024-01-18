@@ -22,7 +22,7 @@ Upload files (image, PDF) or website URLs using the input form and add any tags 
 
 In addition to user-inputted tags, the contents of these files are auto-tagged on upload. 
 
-Images are tagged using computer vision technology from the Imagga API while PDFs and websites are scraped and tagged using the TextRank algorithm. 
+Images are tagged using computer vision technology from the Imagga API while PDFs and websites are scraped and tagged using the Cohere Generate API. 
 
 User tags are displayed in grey while auto tags are in green:
 
@@ -42,6 +42,7 @@ User and auto tags allow files and URLs to be searchable. A list of tags can be 
 - Shadcn and Chakra UI for component styling
 - Golang backend
 - Imagga API for image tagging
+- Cohere API for text tagging
 - Opengraph.io API for website preview data
 - AWS Localstack S3 for storing images and PDFs
 - MySQL for storing metadata about files and websites
@@ -74,7 +75,7 @@ go get -d ./...
 
 3. After installing MySQL Workbench, create a database with a name, user, and password that you set. Create the env file `server/.env` using the same structure as `server/.env.example`. Add your database name, user, and password here. 
 
-4. Create a free account on [Imagga](https://imagga.com/) and [Opengraph.io](https://www.opengraph.io/). Add your API keys to the env file. 
+4. Create a free account on [Imagga](https://imagga.com/), [Cohere](https://docs.cohere.com/reference/about) and [Opengraph.io](https://www.opengraph.io/). Add your API keys to the env file. 
 
 ## Run Locally
 
